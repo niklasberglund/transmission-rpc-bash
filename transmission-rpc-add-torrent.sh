@@ -6,6 +6,8 @@ USER_PASSWORD_ARG="" # curl invocations' --user argument
 HOST_STRING=$1
 TORRENT_PATH=$2
 
+QUIET_MODE=0 # can be set through the -q flag
+
 FILE_NAME="" # will be set further down after reading options with getopts. Added here for brevity.
 
 function usage {
@@ -22,6 +24,7 @@ function usage {
        -s      Server hostname and optionally port in the format host:port. Defaults to 127.0.0.1:9092 if not specified.
        -u      Server username
        -p      Server password
+       -q      Quiet mode. Add torrent for download then exit - don't display download progress
     "
 }
 
@@ -70,7 +73,7 @@ function spinner {
 }
 
 
-while getopts "hs:u:p:" OPTION
+while getopts "hs:u:p:q" OPTION
 do
     case $OPTION in
         h)
@@ -78,12 +81,13 @@ do
             exit 0
             ;;
         u)
-            echo "user $OPTARG"
             RPC_USER=$OPTARG
             ;;
         p)
-            echo "password $OPTARG"
             RPC_PASSWORD=$OPTARG
+            ;;
+        q)
+            QUIET_MODE=1
             ;;
         \?)
             exit 1
@@ -106,16 +110,13 @@ then
     exit 1
 fi
 
+# get header for this Transmission RPC session
 SESSION_HEADER=$(curl --silent --anyauth$USER_PASSWORD_ARG $HOST_ARG/transmission/rpc/ | sed 's/.*<code>//g;s/<\/code>.*//g')
 
 
 ADD_RESULT=$(curl --silent --anyauth$USER_PASSWORD_ARG --header "$SESSION_HEADER" "http://$HOST_ARG/transmission/rpc" -d "{\"method\":\"torrent-add\",\"arguments\":{\"paused\":false,\"filename\":\"${FILE_NAME}\"}}")
 TORRENT_ID=$(echo $ADD_RESULT | sed 's/.*id\"://g;s/\,.*//g')
-#TORRENT_NAME=$(echo $ADD_RESULT | sed 's/.*name\":\"//g;s/\"\}.*//g')
-#echo $ADD_RESULT
-echo $TORRENT_ID
-echo "result"
-echo $ADD_RESULT
+TORRENT_NAME=$(echo $ADD_RESULT | sed 's/.*name\":\"//g;s/\"\}.*//g')
 
 if [ -z "$ADD_RESULT" ]
 then
@@ -130,12 +131,15 @@ fi
 
 echo "Downloading $TORRENT_NAME"
 
-PERCENT_DONE=$(torrent_percent_done 576)
-
-while [ $PERCENT_DONE -lt 100 ]
-do
+if [ $QUIET_MODE -eq 0 ]
+then
     PERCENT_DONE=$(torrent_percent_done 576)
     
-    progress_visualiser $PERCENT_DONE
-    sleep 1
-done
+    while [ $PERCENT_DONE -lt 100 ]
+    do
+        PERCENT_DONE=$(torrent_percent_done 576)
+        
+        progress_visualiser $PERCENT_DONE
+        sleep 1
+    done
+fi
