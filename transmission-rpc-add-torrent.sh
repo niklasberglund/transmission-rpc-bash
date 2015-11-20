@@ -56,7 +56,7 @@ function progress_visualiser {
     STEPS=50
     STEPS_COMPLETED=$(perl -e "print int(($ARG_PERCENT/100) * $STEPS)")
     
-    OUTPUT_STRING="$OUTPUT_STRING $ARG_PERCENT%%  "
+    OUTPUT_STRING="$OUTPUT_STRING $ARG_PERCENT%% "
     
     OUTPUT_STRING="$OUTPUT_STRING| "
     
