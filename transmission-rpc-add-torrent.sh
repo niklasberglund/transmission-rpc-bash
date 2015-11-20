@@ -22,7 +22,7 @@ function usage {
         $0 -s my-server.com -u myUsername -p myPassword \"http://www.frostclick.com/torrents/video/animation/Big_Buck_Bunny_1080p_surround_frostclick.com_frostwire.com.torrent\"
 
     OPTIONS:
-       -h      Show this message
+       -h      Show this help message
        -s      Server hostname and optionally port in the format host:port. Defaults to 127.0.0.1:9092 if not specified.
        -u      Server username
        -p      Server password
