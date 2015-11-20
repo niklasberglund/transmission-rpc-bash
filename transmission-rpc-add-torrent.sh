@@ -43,8 +43,9 @@ function torrent_download_speed {
     ARG_TORRENT_INFO=$1
     
     DOWNLOAD_SPEED=$(echo "$ARG_TORRENT_INFO" | sed 's/.*rateDownload\"://g;s/\}.*//g')
+    DOWNLOAD_SPEED_KB=$(perl -e "printf('%.1f', $DOWNLOAD_SPEED/1024)")
     
-    echo $DOWNLOAD_SPEED
+    echo $DOWNLOAD_SPEED_KB
 }
 
 function progress_visualiser {
@@ -73,7 +74,7 @@ function progress_visualiser {
     done
     
     OUTPUT_STRING="$OUTPUT_STRING |"
-    OUTPUT_STRING="$OUTPUT_STRING $ARG_DOWNLOAD_SPEED b/s"
+    OUTPUT_STRING="$OUTPUT_STRING $ARG_DOWNLOAD_SPEED KB/s"
     
     printf "\r$OUTPUT_STRING  "
 }
