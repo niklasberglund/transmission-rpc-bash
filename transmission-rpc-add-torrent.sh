@@ -29,10 +29,9 @@ function usage {
 }
 
 function torrent_percent_done {
-    ARG_ID=$1
+    ARG_TORRENT_INFO=$1
     
-    TORRENT_GET=$(curl --silent --anyauth$USER_PASSWORD_ARG --header "$SESSION_HEADER" "http://$HOST_ARG/transmission/rpc" -d "{\"method\":\"torrent-get\",\"arguments\": {\"ids\":$ARG_ID,\"fields\":[\"id\",\"percentDone\"]}}")
-    PERCENT_DONE=$(echo $TORRENT_GET | sed 's/.*percentDone\"://g;s/\}.*//g')
+    PERCENT_DONE=$(echo $ARG_TORRENT_INFO | sed 's/.*percentDone\"://g;s/\}.*//g')
     PERCENT=$(perl -e "printf('%.0f', $PERCENT_DONE*100)")
     
     echo $PERCENT
@@ -133,11 +132,12 @@ echo "Downloading $TORRENT_NAME"
 
 if [ $QUIET_MODE -eq 0 ]
 then
-    PERCENT_DONE=$(torrent_percent_done 576)
+    PERCENT_DONE=0 # so the while loop below will start
     
     while [ $PERCENT_DONE -lt 100 ]
     do
-        PERCENT_DONE=$(torrent_percent_done 576)
+        TORRENT_INFO=$(curl --silent --anyauth$USER_PASSWORD_ARG --header "$SESSION_HEADER" "http://$HOST_ARG/transmission/rpc" -d "{\"method\":\"torrent-get\",\"arguments\": {\"ids\":$TORRENT_ID,\"fields\":[\"id\",\"percentDone\"]}}")
+        PERCENT_DONE=$(torrent_percent_done $TORRENT_INFO)
         
         progress_visualiser $PERCENT_DONE
         sleep 1
