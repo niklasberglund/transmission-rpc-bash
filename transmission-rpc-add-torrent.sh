@@ -59,10 +59,13 @@ function progress_visualiser {
     
     OUTPUT_STRING="$OUTPUT_STRING| "
     
-    for i in $(seq 1 $STEPS_COMPLETED)
-    do
-        OUTPUT_STRING="$OUTPUT_STRING#"
-    done
+    if [ $STEPS_COMPLETED -gt 0 ]
+    then
+        for i in $(seq 1 $STEPS_COMPLETED)
+        do
+            OUTPUT_STRING="$OUTPUT_STRING#"
+        done
+    fi
     
     for j in $(seq $STEPS_COMPLETED $STEPS)
     do
