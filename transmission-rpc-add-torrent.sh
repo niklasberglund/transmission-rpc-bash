@@ -1,5 +1,7 @@
 #!/bin/sh
 
+LC_CTYPE=C
+
 HOST_ARG="127.0.0.1:9092" # host passed to curl invocations
 USER_PASSWORD_ARG="" # curl invocations' --user argument
 
@@ -31,14 +33,23 @@ function usage {
 function torrent_percent_done {
     ARG_TORRENT_INFO=$1
     
-    PERCENT_DONE=$(echo $ARG_TORRENT_INFO | sed 's/.*percentDone\"://g;s/\}.*//g')
+    PERCENT_DONE=$(echo "$ARG_TORRENT_INFO" | sed 's/.*percentDone\"://g;s/\,.*//g')
     PERCENT=$(perl -e "printf('%.0f', $PERCENT_DONE*100)")
     
     echo $PERCENT
 }
 
+function torrent_download_speed {
+    ARG_TORRENT_INFO=$1
+    
+    DOWNLOAD_SPEED=$(echo "$ARG_TORRENT_INFO" | sed 's/.*rateDownload\"://g;s/\}.*//g')
+    
+    echo $DOWNLOAD_SPEED
+}
+
 function progress_visualiser {
     ARG_PERCENT=$1
+    ARG_DOWNLOAD_SPEED=$2
     
     OUTPUT_STRING=""
     STEPS=50
@@ -59,6 +70,7 @@ function progress_visualiser {
     done
     
     OUTPUT_STRING="$OUTPUT_STRING |"
+    OUTPUT_STRING="$OUTPUT_STRING $ARG_DOWNLOAD_SPEED b/s"
     
     printf "\r$OUTPUT_STRING  "
 }
@@ -136,10 +148,11 @@ then
     
     while [ $PERCENT_DONE -lt 100 ]
     do
-        TORRENT_INFO=$(curl --silent --anyauth$USER_PASSWORD_ARG --header "$SESSION_HEADER" "http://$HOST_ARG/transmission/rpc" -d "{\"method\":\"torrent-get\",\"arguments\": {\"ids\":$TORRENT_ID,\"fields\":[\"id\",\"percentDone\"]}}")
-        PERCENT_DONE=$(torrent_percent_done $TORRENT_INFO)
+        TORRENT_INFO=$(curl --silent --anyauth$USER_PASSWORD_ARG --header "$SESSION_HEADER" "http://$HOST_ARG/transmission/rpc" -d "{\"method\":\"torrent-get\",\"arguments\": {\"ids\":$TORRENT_ID,\"fields\":[\"rateDownload\",\"id\",\"percentDone\"]}}")
+        PERCENT_DONE=$(torrent_percent_done "$TORRENT_INFO")
+        DOWNLOAD_SPEED=$(torrent_download_speed "$TORRENT_INFO")
         
-        progress_visualiser $PERCENT_DONE
+        progress_visualiser $PERCENT_DONE $DOWNLOAD_SPEED
         sleep 1
     done
 fi
