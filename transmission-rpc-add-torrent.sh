@@ -12,8 +12,8 @@ QUIET_MODE=0 # can be set through the -q flag
 
 FILE_NAME="" # will be set further down after reading options with getopts. Added here for brevity.
 
-    echo "
 usage() {
+cat << EOF
     Usage: $0 [options] <Torrent address>
 
     This script adds a torrent for download through Transmission's RPC protocol.
@@ -27,7 +27,7 @@ usage() {
        -u      Server username
        -p      Server password
        -q      Quiet mode. Add torrent for download then exit - don't display download progress
-    "
+EOF
 }
 
 torrent_percent_done() {
