@@ -12,8 +12,8 @@ QUIET_MODE=0 # can be set through the -q flag
 
 FILE_NAME="" # will be set further down after reading options with getopts. Added here for brevity.
 
-function usage {
     echo "
+usage() {
     Usage: $0 [options] <Torrent address>
 
     This script adds a torrent for download through Transmission's RPC protocol.
@@ -30,7 +30,7 @@ function usage {
     "
 }
 
-function torrent_percent_done {
+torrent_percent_done() {
     ARG_TORRENT_INFO=$1
     
     PERCENT_DONE=$(echo "$ARG_TORRENT_INFO" | sed 's/.*percentDone\"://g;s/\,.*//g')
@@ -39,7 +39,7 @@ function torrent_percent_done {
     echo $PERCENT
 }
 
-function torrent_download_speed {
+torrent_download_speed() {
     ARG_TORRENT_INFO=$1
     
     DOWNLOAD_SPEED=$(echo "$ARG_TORRENT_INFO" | sed 's/.*rateDownload\"://g;s/\}.*//g')
@@ -48,7 +48,7 @@ function torrent_download_speed {
     echo $DOWNLOAD_SPEED_KB
 }
 
-function progress_visualiser {
+progress_visualiser() {
     ARG_PERCENT=$1
     ARG_DOWNLOAD_SPEED=$2
     
@@ -80,7 +80,7 @@ function progress_visualiser {
 }
 
 SPINNER_INDEX=0
-function spinner {
+spinner() {
     SPINNER_CHARACTERS="◴◷◶◵"
     SPINNER_CHARACTER_COUNT=4
     
