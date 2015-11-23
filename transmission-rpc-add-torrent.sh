@@ -104,6 +104,9 @@ do
         q)
             QUIET_MODE=1
             ;;
+        s)
+            HOST_ARG=$OPTARG
+            ;;
         \?)
             exit 1
             ;;
