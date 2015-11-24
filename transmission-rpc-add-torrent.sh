@@ -7,11 +7,13 @@ USER_PASSWORD_ARG="" # curl invocations' --user argument
 
 QUIET_MODE=0 # can be set through the -q flag
 
-FILE_NAME="" # will be set further down after reading options with getopts. Added here for brevity.
+TORRENT_LINK="" # will be set further down after reading options with getopts. Added here for brevity.
+LOCAL_TORRENT_FILE="" # will be set further down after reading options with getopts. Added here for brevity.
+METAINFO="" # will be set with base64 encoded torrent file content if local file is specified
 
 usage() {
 cat << EOF
-    Usage: $0 [options] <Torrent address>
+    Usage: $0 [options] <Torrent address or local file path>
 
     This script adds a torrent for download through Transmission's RPC protocol.
     
@@ -110,7 +112,19 @@ do
     esac
 done
 
-FILE_NAME=${@:$OPTIND:1}
+# one of these will be set further down
+LOCAL_TORRENT_FILE=
+TORRENT_LINK=
+
+TORRENT_ARG=${@:$OPTIND:1}
+PROTOCOL_COMPONENT=$(echo $TORRENT_ARG | cut -d ":" -f 1)
+
+if [ "$PROTOCOL_COMPONENT" == "magnet" ] || [ "$PROTOCOL_COMPONENT" == "http" ] || [ "$PROTOCOL_COMPONENT" == "https" ]
+then
+    TORRENT_LINK=$TORRENT_ARG
+else
+    LOCAL_TORRENT_FILE=$TORRENT_ARG
+fi
 
 # set USER_PASSWORD_ARG
 if [ ! -z "$RPC_USER" ] && [ ! -z "$RPC_PASSWORD" ]
@@ -128,8 +142,20 @@ fi
 # get header for this Transmission RPC session
 SESSION_HEADER=$(curl --silent --anyauth$USER_PASSWORD_ARG $HOST_ARG/transmission/rpc/ | sed 's/.*<code>//g;s/<\/code>.*//g')
 
+METAINFO_OR_TORRENT_LINK_FIELD="" # populated with either filename or metainfo further down
 
-ADD_RESULT=$(curl --silent --anyauth$USER_PASSWORD_ARG --header "$SESSION_HEADER" "http://$HOST_ARG/transmission/rpc" -d "{\"method\":\"torrent-add\",\"arguments\":{\"paused\":false,\"filename\":\"${FILE_NAME}\"}}")
+if [ ! -z "$TORRENT_LINK" ]
+then
+    METAINFO_OR_TORRENT_LINK_FIELD="\"filename\":\"${TORRENT_LINK}\""
+fi
+
+if [ ! -z "$LOCAL_TORRENT_FILE" ]
+then
+    BASE64_ENCODED_TORRENT_FILE=$(cat "$LOCAL_TORRENT_FILE" | base64)
+    METAINFO_OR_TORRENT_LINK_FIELD="\"metainfo\":\"$BASE64_ENCODED_TORRENT_FILE\""
+fi
+
+ADD_RESULT=$(curl --silent --anyauth$USER_PASSWORD_ARG --header "$SESSION_HEADER" "http://$HOST_ARG/transmission/rpc" -d "{\"method\":\"torrent-add\",\"arguments\":{\"paused\":false,$METAINFO_OR_TORRENT_LINK_FIELD}}")
 TORRENT_ID=$(echo $ADD_RESULT | sed 's/.*id\"://g;s/\,.*//g')
 TORRENT_NAME=$(echo $ADD_RESULT | sed 's/.*name\":\"//g;s/\"\}.*//g')
 
