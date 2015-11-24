@@ -5,9 +5,6 @@ LC_CTYPE=C
 HOST_ARG="127.0.0.1:9092" # host passed to curl invocations
 USER_PASSWORD_ARG="" # curl invocations' --user argument
 
-HOST_STRING=$1
-TORRENT_PATH=$2
-
 QUIET_MODE=0 # can be set through the -q flag
 
 FILE_NAME="" # will be set further down after reading options with getopts. Added here for brevity.
