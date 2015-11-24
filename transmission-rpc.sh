@@ -112,20 +112,6 @@ do
     esac
 done
 
-# one of these will be set further down
-LOCAL_TORRENT_FILE=
-TORRENT_LINK=
-
-TORRENT_ARG=${@:$OPTIND:1}
-PROTOCOL_COMPONENT=$(echo $TORRENT_ARG | cut -d ":" -f 1)
-
-if [ "$PROTOCOL_COMPONENT" == "magnet" ] || [ "$PROTOCOL_COMPONENT" == "http" ] || [ "$PROTOCOL_COMPONENT" == "https" ]
-then
-    TORRENT_LINK=$TORRENT_ARG
-else
-    LOCAL_TORRENT_FILE=$TORRENT_ARG
-fi
-
 # set USER_PASSWORD_ARG
 if [ ! -z "$RPC_USER" ] && [ ! -z "$RPC_PASSWORD" ]
 then
@@ -141,6 +127,20 @@ fi
 
 # get header for this Transmission RPC session
 SESSION_HEADER=$(curl --silent --anyauth$USER_PASSWORD_ARG $HOST_ARG/transmission/rpc/ | sed 's/.*<code>//g;s/<\/code>.*//g')
+
+# one of these will be set further down
+LOCAL_TORRENT_FILE=
+TORRENT_LINK=
+
+TORRENT_ARG=${@:$OPTIND:1}
+PROTOCOL_COMPONENT=$(echo $TORRENT_ARG | cut -d ":" -f 1)
+
+if [ "$PROTOCOL_COMPONENT" == "magnet" ] || [ "$PROTOCOL_COMPONENT" == "http" ] || [ "$PROTOCOL_COMPONENT" == "https" ]
+then
+    TORRENT_LINK=$TORRENT_ARG
+else
+    LOCAL_TORRENT_FILE=$TORRENT_ARG
+fi
 
 METAINFO_OR_TORRENT_LINK_FIELD="" # populated with either filename or metainfo further down
 
