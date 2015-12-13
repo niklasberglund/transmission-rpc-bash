@@ -5,6 +5,9 @@ LC_CTYPE=C
 HOST_ARG="127.0.0.1:9092" # host passed to curl invocations
 USER_PASSWORD_ARG="" # curl invocations' --user argument
 
+TASK_LIST=0
+TASK_ADD=0
+
 QUIET_MODE=0 # can be set through the -q flag
 
 TORRENT_LINK="" # will be set further down after reading options with getopts. Added here for brevity.
@@ -25,6 +28,7 @@ cat << EOF
        -s      Server hostname and optionally port in the format host:port. Defaults to 127.0.0.1:9092 if not specified.
        -u      Server username
        -p      Server password
+       -l      List active torrents and their progress
        -q      Quiet mode. Add torrent for download then exit - don't display download progress
 EOF
 }
@@ -45,6 +49,41 @@ torrent_download_speed() {
     DOWNLOAD_SPEED_KB=$(perl -e "printf('%.1f', $DOWNLOAD_SPEED/1024)")
     
     echo $DOWNLOAD_SPEED_KB
+}
+
+print_torrents_listing() {
+    JSON=$1
+    
+    STATUS_PAUSED=0
+    STATUS_QUEUED=3
+    STATUS_DOWNLOADING=4
+    STATUS_SEEDING=6
+    
+    ROW_BY_ROW=$(echo "$TORRENTS_INFO" | sed 's/}\,{/}\
+{/g' | sed 's/^{//g' | sed 's/}$//g' | sed 's/}]},\"result\":.*$//g')
+    
+    # header of table output
+    TABLE_HEADER="Status\tName                                    \tProgress\n" # Dirty. I'm sorry
+    
+    TABLE_DATA=$(echo "$ROW_BY_ROW" | while read LINE
+    do
+        STATUS=$(echo "$LINE" | grep -Eo "\".*status\":(.*?)\$" | sed 's/.*\"status\"://')
+        
+        if [ ! "$STATUS" -eq $STATUS_PAUSED ] # not displaying paused torrent downloads
+        then
+            NAME=$(echo "$LINE" | grep -Eo "\"name\":\"(.*?)\"" | sed 's/\"name\":\"//' | sed 's/\"$//')
+            PERCENT_DONE=$(echo "$LINE" | grep -Eo "\"percentDone\":(.*?)," | sed 's/\"percentDone\"://' | sed 's/,$//')
+            PERCENT_DONE=$(perl -e "print int($PERCENT_DONE*100)")
+            RATE_DOWNLOAD=$(echo "$LINE" | grep -Eo "\"rateDownload\":(.*?)," | sed 's/\"rateDownload\"://' | sed 's/,$//')
+            
+            STATUS_STRING="N/A"
+            printf "${STATUS_STRING}\t%.40s\t${PERCENT_DONE}%s \n" "$NAME" "%%"
+        fi
+    done)
+    
+    # output table
+    printf "$TABLE_HEADER$TABLE_DATA"
+    # | column -ts $'\t'
 }
 
 progress_visualiser() {
@@ -87,7 +126,7 @@ spinner() {
 }
 
 
-while getopts "hs:u:p:q" OPTION
+while getopts "hs:u:p:lq" OPTION
 do
     case $OPTION in
         h)
@@ -99,6 +138,9 @@ do
             ;;
         p)
             RPC_PASSWORD=$OPTARG
+            ;;
+        l)
+            TASK_LIST=1
             ;;
         q)
             QUIET_MODE=1
@@ -127,6 +169,13 @@ fi
 
 # get header for this Transmission RPC session
 SESSION_HEADER=$(curl --silent --anyauth$USER_PASSWORD_ARG $HOST_ARG/transmission/rpc/ | sed 's/.*<code>//g;s/<\/code>.*//g')
+
+if [ $TASK_LIST -eq 1 ]
+then
+    TORRENTS_INFO=$(curl --silent --anyauth$USER_PASSWORD_ARG --header "$SESSION_HEADER" "http://$HOST_ARG/transmission/rpc" -d "{\"method\":\"torrent-get\",\"arguments\": {\"fields\":[\"rateDownload\",\"id\",\"percentDone\",\"status\",\"name\"]}}")
+    print_torrents_listing "$TORRENTS_INFO"
+    exit 0
+fi
 
 # one of these will be set further down
 LOCAL_TORRENT_FILE=
