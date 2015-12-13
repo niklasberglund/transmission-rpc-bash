@@ -6,6 +6,7 @@ HOST_ARG="127.0.0.1:9092" # host passed to curl invocations
 USER_PASSWORD_ARG="" # curl invocations' --user argument
 
 TASK_LIST=0
+TASK_LIST_PAUSED=0
 TASK_ADD=0
 
 QUIET_MODE=0 # can be set through the -q flag
@@ -29,6 +30,7 @@ cat << EOF
        -u      Server username
        -p      Server password
        -l      List active torrents and their progress
+       -P      Used together with the -l flag. Makes -l list not only active torrents but also paused ones.
        -q      Quiet mode. Add torrent for download then exit - don't display download progress
 EOF
 }
@@ -69,7 +71,7 @@ print_torrents_listing() {
     do
         STATUS=$(echo "$LINE" | grep -Eo "\".*status\":(.*?)\$" | sed 's/.*\"status\"://')
         
-        if [ ! "$STATUS" -eq $STATUS_PAUSED ] # not displaying paused torrent downloads
+        if [ $TASK_LIST_PAUSED -eq 1 ] || [ ! "$STATUS" -eq $STATUS_PAUSED ] # not displaying paused torrent downloads
         then
             NAME=$(echo "$LINE" | grep -Eo "\"name\":\"(.*?)\"" | sed 's/\"name\":\"//' | sed 's/\"$//')
             PERCENT_DONE=$(echo "$LINE" | grep -Eo "\"percentDone\":(.*?)," | sed 's/\"percentDone\"://' | sed 's/,$//')
@@ -86,6 +88,9 @@ print_torrents_listing() {
             elif [ "$STATUS" -eq $STATUS_SEEDING ]
             then
                 STATUS_STRING="Seeding"
+            elif [ "$STATUS" -eq $STATUS_PAUSED ]
+            then
+                STATUS_STRING="Paused"
             else
                 STATUS_STRING="N/A"
             fi
@@ -130,7 +135,7 @@ progress_visualiser() {
     printf "\r$OUTPUT_STRING  "
 }
 
-while getopts "hs:u:p:lq" OPTION
+while getopts "hs:u:p:lPq" OPTION
 do
     case $OPTION in
         h)
@@ -146,6 +151,9 @@ do
         l)
             TASK_LIST=1
             ;;
+        P)
+            TASK_LIST_PAUSED=1
+            ;;
         q)
             QUIET_MODE=1
             ;;
@@ -157,6 +165,13 @@ do
             ;;
     esac
 done
+
+# make sure -P isn't used without -l
+if [ $TASK_LIST_PAUSED -eq 1 ] && [ $TASK_LIST -eq 0 ]
+then
+    echo "The -P flag must be used together with the -l flag."
+    exit 1
+fi
 
 # set USER_PASSWORD_ARG
 if [ ! -z "$RPC_USER" ] && [ ! -z "$RPC_PASSWORD" ]
