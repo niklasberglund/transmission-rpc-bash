@@ -15,6 +15,10 @@ TORRENT_LINK="" # will be set further down after reading options with getopts. A
 LOCAL_TORRENT_FILE="" # will be set further down after reading options with getopts. Added here for brevity.
 METAINFO="" # will be set with base64 encoded torrent file content if local file is specified
 
+# for text styling
+TEXT_RESET='\e[0m'
+TEXT_INVERTED='\e[7m'
+
 usage() {
 cat << EOF
     Usage: $0 [options] <Torrent address or local file path>
@@ -65,7 +69,7 @@ print_torrents_listing() {
 {/g' | sed 's/^{//g' | sed 's/}$//g' | sed 's/}]},\"result\":.*$//g')
     
     # header of table output
-    TABLE_HEADER="Status\tName                                    \tProgress\n" # Dirty. I'm sorry
+    TABLE_HEADER="${TEXT_INVERTED}Status\tName                                    \tProgress\n${TEXT_RESET}" # Dirty. I'm sorry
     
     TABLE_DATA=$(echo "$ROW_BY_ROW" | while read LINE
     do
