@@ -22,7 +22,7 @@ cat << EOF
     This script adds a torrent for download through Transmission's RPC protocol.
     
     EXAMPLE:
-        $0 -s my-server.com:9092 -u myUsername -p myPassword \"http://www.frostclick.com/torrents/video/animation/Big_Buck_Bunny_1080p_surround_frostclick.com_frostwire.com.torrent\"
+        $0 -s my-server.com:9092 -u myUsername -p myPassword "http://www.frostclick.com/torrents/video/animation/Big_Buck_Bunny_1080p_surround_frostclick.com_frostwire.com.torrent"
 
     OPTIONS:
        -h      Show this help message
