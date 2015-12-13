@@ -117,15 +117,6 @@ progress_visualiser() {
     printf "\r$OUTPUT_STRING  "
 }
 
-SPINNER_INDEX=0
-spinner() {
-    SPINNER_CHARACTERS="◴◷◶◵"
-    SPINNER_CHARACTER_COUNT=4
-    
-    let SPINNER_INDEX=$SPINNER_INDEX+1
-}
-
-
 while getopts "hs:u:p:lq" OPTION
 do
     case $OPTION in
