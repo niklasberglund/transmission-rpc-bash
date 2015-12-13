@@ -8,6 +8,7 @@ USER_PASSWORD_ARG="" # curl invocations' --user argument
 TASK_LIST=0
 TASK_LIST_PAUSED=0
 TASK_ADD=0
+COLORED_OUTPUT=0
 
 QUIET_MODE=0 # can be set through the -q flag
 
@@ -18,6 +19,11 @@ METAINFO="" # will be set with base64 encoded torrent file content if local file
 # for text styling
 TEXT_RESET='\e[0m'
 TEXT_INVERTED='\e[7m'
+COLOR_GREEN='\e[32m'
+COLOR_BLUE='\e[34m'
+COLOR_YELLOW='\e[33m'
+COLOR_LIGHT_GRAY='\e[37m'
+COLOR_LIGHT_RED='\e[91m'
 
 usage() {
 cat << EOF
@@ -36,6 +42,7 @@ cat << EOF
        -l      List active torrents and their progress
        -P      Used together with the -l flag. Makes -l list not only active torrents but also paused ones.
        -q      Quiet mode. Add torrent for download then exit - don't display download progress
+       -c      Colored output
 EOF
 }
 
@@ -86,15 +93,35 @@ print_torrents_listing() {
             if [ "$STATUS" -eq $STATUS_QUEUED ]
             then
                 STATUS_STRING="Queued"
+                
+                if [ $COLORED_OUTPUT -eq 1 ]
+                then
+                    STATUS_STRING="${COLOR_YELLOW}${STATUS_STRING}${TEXT_RESET}"
+                fi
             elif [ "$STATUS" -eq $STATUS_DOWNLOADING ]
             then
                 STATUS_STRING="Dl"
+                
+                if [ $COLORED_OUTPUT -eq 1 ]
+                then
+                    STATUS_STRING="${COLOR_GREEN}${STATUS_STRING}${TEXT_RESET}"
+                fi
             elif [ "$STATUS" -eq $STATUS_SEEDING ]
             then
                 STATUS_STRING="Seeding"
+                
+                if [ $COLORED_OUTPUT -eq 1 ]
+                then
+                    STATUS_STRING="${COLOR_BLUE}${STATUS_STRING}${TEXT_RESET}"
+                fi
             elif [ "$STATUS" -eq $STATUS_PAUSED ]
             then
                 STATUS_STRING="Paused"
+                
+                if [ $COLORED_OUTPUT -eq 1 ]
+                then
+                    STATUS_STRING="${COLOR_LIGHT_RED}${STATUS_STRING}${TEXT_RESET}"
+                fi
             else
                 STATUS_STRING="N/A"
             fi
@@ -139,7 +166,7 @@ progress_visualiser() {
     printf "\r$OUTPUT_STRING  "
 }
 
-while getopts "hs:u:p:lPq" OPTION
+while getopts "hs:u:p:lPqc" OPTION
 do
     case $OPTION in
         h)
@@ -163,6 +190,9 @@ do
             ;;
         s)
             HOST_ARG=$OPTARG
+            ;;
+        c)
+            COLORED_OUTPUT=1
             ;;
         \?)
             exit 1
