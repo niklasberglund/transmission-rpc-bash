@@ -76,7 +76,20 @@ print_torrents_listing() {
             PERCENT_DONE=$(perl -e "print int($PERCENT_DONE*100)")
             RATE_DOWNLOAD=$(echo "$LINE" | grep -Eo "\"rateDownload\":(.*?)," | sed 's/\"rateDownload\"://' | sed 's/,$//')
             
-            STATUS_STRING="N/A"
+            # turn status code into string
+            if [ "$STATUS" -eq $STATUS_QUEUED ]
+            then
+                STATUS_STRING="Queued"
+            elif [ "$STATUS" -eq $STATUS_DOWNLOADING ]
+            then
+                STATUS_STRING="Dl"
+            elif [ "$STATUS" -eq $STATUS_SEEDING ]
+            then
+                STATUS_STRING="Seeding"
+            else
+                STATUS_STRING="N/A"
+            fi
+            
             printf "${STATUS_STRING}\t%.40s\t${PERCENT_DONE}%s \n" "$NAME" "%%"
         fi
     done)
