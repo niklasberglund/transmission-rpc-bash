@@ -3,6 +3,8 @@ Bash script for adding torrents for download to Transmission through Transmissio
 
 It can be used for adding torrents for download and tracking progress.
 
+**Is the script not working as expected on your system? Please create an issue.**
+
 # Usage
 A very basic example is: `./transmission-rpc.sh -s myserver.com -u myusername -p mypassword <torrent>` where *\<torrent\>* can be an external link, local path or a magnet link.
 
