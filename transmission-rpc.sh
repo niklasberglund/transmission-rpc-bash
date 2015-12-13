@@ -126,6 +126,11 @@ print_torrents_listing() {
                 STATUS_STRING="N/A"
             fi
             
+            if [ $COLORED_OUTPUT -eq 1 ] && [ "$PERCENT_DONE" -eq 100 ]
+            then
+                PERCENT_DONE="${COLOR_GREEN}${PERCENT_DONE}${TEXT_RESET}"
+            fi
+            
             printf "${STATUS_STRING}\t%.40s\t${PERCENT_DONE}%s \n" "$NAME" "%%"
         fi
     done)
