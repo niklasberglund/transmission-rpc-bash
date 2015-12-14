@@ -77,7 +77,7 @@ print_torrents_listing() {
 {/g' | sed 's/^{//g' | sed 's/}$//g' | sed 's/}]},\"result\":.*$//g')
     
     # header of table output
-    TABLE_HEADER="${TEXT_INVERTED}Status\tName                                    \tProgress\n${TEXT_RESET}" # Dirty. I'm sorry
+    TABLE_HEADER="${TEXT_INVERTED}Status\tName\tProgress${TEXT_RESET}" # Dirty. I'm sorry
     
     TABLE_DATA=$(echo "$ROW_BY_ROW" | while read LINE
     do
@@ -132,13 +132,12 @@ print_torrents_listing() {
                 PERCENT_DONE="${COLOR_GREEN}${PERCENT_DONE}${TEXT_RESET}"
             fi
             
-            printf "${STATUS_STRING}\t%.40s\t${PERCENT_DONE}%s \n" "$NAME" "%%"
+            printf "${STATUS_STRING}\t%.40s\t${PERCENT_DONE}%s\n" "$NAME" "%%"
         fi
     done)
     
     # output table
-    printf "$TABLE_HEADER$TABLE_DATA"
-    # | column -ts $'\t'
+    printf "${TABLE_HEADER}\n${TABLE_DATA}\n" | column -ts $'\t'
 }
 
 progress_visualiser() {
