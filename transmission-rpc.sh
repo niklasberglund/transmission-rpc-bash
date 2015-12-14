@@ -19,6 +19,7 @@ METAINFO="" # will be set with base64 encoded torrent file content if local file
 # for text styling
 TEXT_RESET='\e[0m'
 TEXT_INVERTED='\e[7m'
+COLOR_BOLD_RED='\033[1;31m'
 COLOR_GREEN='\e[32m'
 COLOR_BLUE='\e[34m'
 COLOR_YELLOW='\e[33m'
@@ -231,6 +232,20 @@ SESSION_HEADER=$(curl --silent --anyauth$USER_PASSWORD_ARG $HOST_ARG/transmissio
 if [ $TASK_LIST -eq 1 ]
 then
     TORRENTS_INFO=$(curl --silent --anyauth$USER_PASSWORD_ARG --header "$SESSION_HEADER" "http://$HOST_ARG/transmission/rpc" -d "{\"method\":\"torrent-get\",\"arguments\": {\"fields\":[\"rateDownload\",\"id\",\"percentDone\",\"status\",\"name\"]}}")
+    if [ "$?" -gt 0 ]
+    then
+        COLOR_START=
+        COLOR_END=
+        if [ $COLORED_OUTPUT -eq 1 ]
+        then
+            COLOR_START=$COLOR_BOLD_RED
+            COLOR_END=$TEXT_RESET
+        fi
+        
+        printf "${COLOR_START}Error:${COLOR_END} Could not connect to Transmission RPC server. Make sure the specified credentials are correct. For additional info check help text by passing the -h flag."
+        exit 1
+    fi
+    
     print_torrents_listing "$TORRENTS_INFO"
     exit 0
 fi
