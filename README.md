@@ -26,4 +26,5 @@ $ ./transmission-rpc.sh -h
        -l      List active torrents and their progress
        -P      Used together with the -l flag. Makes -l list not only active torrents but also paused ones.
        -q      Quiet mode. Add torrent for download then exit - don't display download progress
-       -c      Colored output```
+       -c      Colored output
+```
