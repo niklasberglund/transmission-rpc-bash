@@ -76,6 +76,12 @@ print_torrents_listing() {
     ROW_BY_ROW=$(echo "$TORRENTS_INFO" | sed 's/}\,{/}\
 {/g' | sed 's/^{//g' | sed 's/}$//g' | sed 's/}]},\"result\":.*$//g')
     
+    # use grep to ignore paused torrents if they shouldn't be listed
+    if [ $TASK_LIST_PAUSED -eq 0 ]
+    then
+        ROW_BY_ROW=$(echo "$ROW_BY_ROW" | grep -v "\"status\":0")
+    fi
+    
     # header of table output
     TABLE_HEADER="${TEXT_INVERTED}Status\tName\tProgress${TEXT_RESET}" # Dirty. I'm sorry
     
