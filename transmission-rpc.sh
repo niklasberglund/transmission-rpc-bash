@@ -89,7 +89,7 @@ print_torrents_listing() {
     do
         STATUS=$(echo "$LINE" | grep -Eo "\".*status\":(.*?)\$" | sed 's/.*\"status\"://')
         
-        if [ $TASK_LIST_PAUSED -eq 1 ] || [ ! "$STATUS" -eq $STATUS_PAUSED ] # not displaying paused torrent downloads
+        if [ $TASK_LIST_PAUSED -eq 1 ] || [ ! "$STATUS" -eq $STATUS_PAUSED ] # not displaying paused torrent downloads by default
         then
             NAME=$(echo "$LINE" | grep -Eo "\"name\":\"(.*?)\"" | sed 's/\"name\":\"//' | sed 's/\"$//')
             PERCENT_DONE=$(echo "$LINE" | grep -Eo "\"percentDone\":(.*?)," | sed 's/\"percentDone\"://' | sed 's/,$//')
