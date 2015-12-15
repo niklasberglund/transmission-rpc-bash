@@ -295,6 +295,7 @@ fi
 if [ ! -z "$(echo "$ADD_RESULT" | grep "Unauthorized User")" ]
 then
     echo "Reached server but could not log on. Verify that the login credentials are correct."
+    exit 1
 fi
 
 echo "Downloading $TORRENT_NAME"
