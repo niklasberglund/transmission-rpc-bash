@@ -319,7 +319,7 @@ then
                 COLOR_END=$TEXT_RESET
             fi
             
-            printf "\n${COLOR_START}Error:${COLOR_END} Lost the connection to Transmission RPC server.${COLOR_END}"
+            printf "\n${COLOR_START}Error:${COLOR_END} Lost the connection to Transmission RPC server. Progress cannot be displayed but your torrent is still active.${COLOR_END}"
             exit 1
         fi
         
