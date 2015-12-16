@@ -307,6 +307,22 @@ then
     while [ $PERCENT_DONE -lt 100 ]
     do
         TORRENT_INFO=$(curl --silent --anyauth$USER_PASSWORD_ARG --header "$SESSION_HEADER" "http://$HOST_ARG/transmission/rpc" -d "{\"method\":\"torrent-get\",\"arguments\": {\"ids\":$TORRENT_ID,\"fields\":[\"rateDownload\",\"id\",\"percentDone\"]}}")
+        
+        # have we lost the connection?
+        if [ "$?" -gt 0 ]
+        then
+            COLOR_START=
+            COLOR_END=
+            if [ $COLORED_OUTPUT -eq 1 ]
+            then
+                COLOR_START=$COLOR_BOLD_RED
+                COLOR_END=$TEXT_RESET
+            fi
+            
+            printf "\n${COLOR_START}Error:${COLOR_END} Lost the connection to Transmission RPC server.${COLOR_END}"
+            exit 1
+        fi
+        
         PERCENT_DONE=$(torrent_percent_done "$TORRENT_INFO")
         DOWNLOAD_SPEED=$(torrent_download_speed "$TORRENT_INFO")
         
