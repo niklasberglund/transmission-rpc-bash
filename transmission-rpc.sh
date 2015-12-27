@@ -83,7 +83,7 @@ print_torrents_listing() {
     fi
     
     # header of table output
-    TABLE_HEADER="${TEXT_INVERTED}Status\tName\tProgress${TEXT_RESET}" # Dirty. I'm sorry
+    TABLE_HEADER="${TEXT_INVERTED}Status\tName\tProgress\tDl.\tUp.${TEXT_RESET}" # Dirty. I'm sorry
     
     TABLE_DATA=$(echo "$ROW_BY_ROW" | while read LINE
     do
@@ -95,6 +95,10 @@ print_torrents_listing() {
             PERCENT_DONE=$(echo "$LINE" | grep -Eo "\"percentDone\":(.*?)," | sed 's/\"percentDone\"://' | sed 's/,$//')
             PERCENT_DONE=$(perl -e "print int($PERCENT_DONE*100)")
             RATE_DOWNLOAD=$(echo "$LINE" | grep -Eo "\"rateDownload\":(.*?)," | sed 's/\"rateDownload\"://' | sed 's/,$//')
+            RATE_UPLOAD=$(echo "$LINE" | grep -Eo "\"rateUpload\":(.*?)," | sed 's/\"rateUpload\"://' | sed 's/,$//')
+            
+            RATE_DOWNLOAD_KB=$(perl -e "printf('%.1f', $RATE_DOWNLOAD/1024)")
+            RATE_UPLOAD_KB=$(perl -e "printf('%.1f', $RATE_UPLOAD/1024)")
             
             # turn status code into string
             if [ "$STATUS" -eq $STATUS_QUEUED ]
@@ -138,7 +142,7 @@ print_torrents_listing() {
                 PERCENT_DONE="${COLOR_GREEN}${PERCENT_DONE}${TEXT_RESET}"
             fi
             
-            printf "${STATUS_STRING}\t%.40s\t${PERCENT_DONE}%s\n" "$NAME" "%%"
+            printf "${STATUS_STRING}\t%.40s\t${PERCENT_DONE}%s\t${RATE_DOWNLOAD_KB} KB/s\t${RATE_UPLOAD_KB} KB/s\n" "$NAME" "%%"
         fi
     done)
     
@@ -236,7 +240,7 @@ SESSION_HEADER=$(curl --silent --anyauth$USER_PASSWORD_ARG $HOST_ARG/transmissio
 
 if [ $TASK_LIST -eq 1 ]
 then
-    TORRENTS_INFO=$(curl --silent --anyauth$USER_PASSWORD_ARG --header "$SESSION_HEADER" "http://$HOST_ARG/transmission/rpc" -d "{\"method\":\"torrent-get\",\"arguments\": {\"fields\":[\"rateDownload\",\"id\",\"percentDone\",\"status\",\"name\"]}}")
+    TORRENTS_INFO=$(curl --silent --anyauth$USER_PASSWORD_ARG --header "$SESSION_HEADER" "http://$HOST_ARG/transmission/rpc" -d "{\"method\":\"torrent-get\",\"arguments\": {\"fields\":[\"rateDownload\",\"rateUpload\",\"id\",\"percentDone\",\"status\",\"name\"]}}")
     if [ "$?" -gt 0 ]
     then
         COLOR_START=
