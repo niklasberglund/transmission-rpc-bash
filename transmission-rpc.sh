@@ -84,7 +84,7 @@ print_torrents_listing() {
     fi
     
     # header of table output
-    TABLE_HEADER="${TEXT_INVERTED}Status\tName\tProgress\tDl.\tUp.${TEXT_RESET}" # Dirty. I'm sorry
+    TABLE_HEADER="${TEXT_INVERTED}\nStatus\tName\tProgress\tDl.\tUp.        ${TEXT_RESET}" # Dirty. I'm sorry
     
     TABLE_DATA=$(echo "$ROW_BY_ROW" | while read LINE
     do
@@ -105,50 +105,41 @@ print_torrents_listing() {
             if [ "$STATUS" -eq $STATUS_QUEUED ]
             then
                 STATUS_STRING="Queued"
-                
-                if [ $COLORED_OUTPUT -eq 1 ]
-                then
-                    STATUS_STRING="${COLOR_YELLOW}${STATUS_STRING}${TEXT_RESET}"
-                fi
             elif [ "$STATUS" -eq $STATUS_DOWNLOADING ]
             then
                 STATUS_STRING="Dl"
-                
-                if [ $COLORED_OUTPUT -eq 1 ]
-                then
-                    STATUS_STRING="${COLOR_GREEN}${STATUS_STRING}${TEXT_RESET}"
-                fi
             elif [ "$STATUS" -eq $STATUS_SEEDING ]
             then
                 STATUS_STRING="Seeding"
-                
-                if [ $COLORED_OUTPUT -eq 1 ]
-                then
-                    STATUS_STRING="${COLOR_BLUE}${STATUS_STRING}${TEXT_RESET}"
-                fi
             elif [ "$STATUS" -eq $STATUS_PAUSED ]
             then
                 STATUS_STRING="Paused"
-                
-                if [ $COLORED_OUTPUT -eq 1 ]
-                then
-                    STATUS_STRING="${COLOR_LIGHT_RED}${STATUS_STRING}${TEXT_RESET}"
-                fi
             else
                 STATUS_STRING="N/A"
-            fi
-            
-            if [ $COLORED_OUTPUT -eq 1 ] && [ "$PERCENT_DONE" -eq 100 ]
-            then
-                PERCENT_DONE="${COLOR_GREEN}${PERCENT_DONE}${TEXT_RESET}"
             fi
             
             printf "${STATUS_STRING}\t%.40s\t${PERCENT_DONE}%s\t${RATE_DOWNLOAD_KB} KB/s\t${RATE_UPLOAD_KB} KB/s\n" "$NAME" "%%"
         fi
     done)
     
+    # solution for conditional colored output. output is piped through colorize_table which either colorizes or just forwards(cat -)
+    if [ $COLORED_OUTPUT -eq 1 ]
+    then
+        colorize_table() {
+            sed "s/^Dl/${COLOR_GREEN}Dl${TEXT_RESET}/" |
+            sed "s/^Seeding/${COLOR_BLUE}Seeding${TEXT_RESET}/" |
+            sed "s/^Queued/${COLOR_YELLOW}Queued${TEXT_RESET}/" |
+            sed "s/^Paused/${COLOR_LIGHT_RED}Paused${TEXT_RESET}/" |
+            sed "s/100\%/${COLOR_GREEN}100\%${TEXT_RESET}/"
+        }
+    else
+        colorize_table() {
+            cat -
+        }
+    fi
+    
     # output table
-    printf "${TABLE_HEADER}\n${TABLE_DATA}\n" | column -ts $'\t'
+    printf "${TABLE_HEADER}\n${TABLE_DATA}\n" | column -ts $'\t' | colorize_table  # the colorize_table function only colorizes if COLORED_OUTPUT is set to 1
 }
 
 progress_visualiser() {
