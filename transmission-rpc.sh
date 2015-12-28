@@ -17,14 +17,15 @@ LOCAL_TORRENT_FILE="" # will be set further down after reading options with geto
 METAINFO="" # will be set with base64 encoded torrent file content if local file is specified
 
 # for text styling
-TEXT_RESET='\e[0m'
-TEXT_INVERTED='\e[7m'
-COLOR_BOLD_RED='\033[1;31m'
-COLOR_GREEN='\e[32m'
-COLOR_BLUE='\e[34m'
-COLOR_YELLOW='\e[33m'
-COLOR_LIGHT_GRAY='\e[37m'
-COLOR_LIGHT_RED='\e[91m'
+TEXT_RESET=$(tput sgr0)
+TEXT_INVERTED=$(tput rev)
+TEXT_BOLD=$(tput bold)
+COLOR_RED=$(tput setaf 1)
+COLOR_GREEN=$(tput setaf 2)
+COLOR_BLUE=$(tput setaf 4)
+COLOR_YELLOW=$(tput setaf 3)
+COLOR_LIGHT_GRAY="$(tput bold)$(tput setaf 7)"
+COLOR_LIGHT_RED="$(tput bold)$(tput setaf 1)"
 
 usage() {
 cat << EOF
