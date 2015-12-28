@@ -138,8 +138,8 @@ print_torrents_listing() {
         }
     fi
     
-    # output table
-    printf "${TABLE_HEADER}\n${TABLE_DATA}\n" | column -ts $'\t' | colorize_table  # the colorize_table function only colorizes if COLORED_OUTPUT is set to 1
+    # output table. the colorize_table function only colorizes if COLORED_OUTPUT is set to 1
+    printf "${TABLE_HEADER}\n${TABLE_DATA}\n" | column -ts $'\t' | colorize_table
 }
 
 progress_visualiser() {
