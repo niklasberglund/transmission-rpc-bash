@@ -20,12 +20,12 @@ METAINFO="" # will be set with base64 encoded torrent file content if local file
 TEXT_RESET=$(tput sgr0)
 TEXT_INVERTED=$(tput rev)
 TEXT_BOLD=$(tput bold)
-COLOR_RED=$(tput setaf 1)
-COLOR_GREEN=$(tput setaf 2)
-COLOR_BLUE=$(tput setaf 4)
-COLOR_YELLOW=$(tput setaf 3)
-COLOR_LIGHT_GRAY="$(tput bold)$(tput setaf 7)"
-COLOR_LIGHT_RED="$(tput bold)$(tput setaf 1)"
+FOREGROUND_RED=$(tput setaf 1)
+FOREGROUND_GREEN=$(tput setaf 2)
+FOREGROUND_BLUE=$(tput setaf 4)
+FOREGROUND_YELLOW=$(tput setaf 3)
+FOREGROUND_LIGHT_GRAY="$(tput bold)$(tput setaf 7)"
+FOREGROUND_LIGHT_RED="$(tput bold)$(tput setaf 1)"
 
 usage() {
 cat << EOF
@@ -126,11 +126,11 @@ print_torrents_listing() {
     if [ $COLORED_OUTPUT -eq 1 ]
     then
         colorize_table() {
-            sed "s/^Dl/${COLOR_GREEN}Dl${TEXT_RESET}/" |
-            sed "s/^Seeding/${COLOR_BLUE}Seeding${TEXT_RESET}/" |
-            sed "s/^Queued/${COLOR_YELLOW}Queued${TEXT_RESET}/" |
-            sed "s/^Paused/${COLOR_LIGHT_RED}Paused${TEXT_RESET}/" |
-            sed "s/100\%/${COLOR_GREEN}100\%${TEXT_RESET}/"
+            sed "s/^Dl/${FOREGROUND_GREEN}Dl${TEXT_RESET}/" |
+            sed "s/^Seeding/${FOREGROUND_BLUE}Seeding${TEXT_RESET}/" |
+            sed "s/^Queued/${FOREGROUND_YELLOW}Queued${TEXT_RESET}/" |
+            sed "s/^Paused/${FOREGROUND_LIGHT_RED}Paused${TEXT_RESET}/" |
+            sed "s/100\%/${FOREGROUND_GREEN}100\%${TEXT_RESET}/"
         }
     else
         colorize_table() {
