@@ -20,6 +20,7 @@ METAINFO="" # will be set with base64 encoded torrent file content if local file
 TEXT_RESET=$(tput sgr0)
 TEXT_INVERTED=$(tput rev)
 TEXT_BOLD=$(tput bold)
+FOREGROUND_WHITE=$(tput sefaf 0)
 FOREGROUND_RED=$(tput setaf 1)
 FOREGROUND_GREEN=$(tput setaf 2)
 FOREGROUND_BLUE=$(tput setaf 4)
@@ -240,7 +241,7 @@ then
         COLOR_END=
         if [ $COLORED_OUTPUT -eq 1 ]
         then
-            COLOR_START=$BACKGROUND_RED
+            COLOR_START="${BACKGROUND_RED}${FOREGROUND_WHITE}"
             COLOR_END=$TEXT_RESET
         fi
         
@@ -312,7 +313,7 @@ then
             COLOR_END=
             if [ $COLORED_OUTPUT -eq 1 ]
             then
-                COLOR_START=$BACKGROUND_RED
+                COLOR_START="${BACKGROUND_RED}${FOREGROUND_WHITE}"
                 COLOR_END=$TEXT_RESET
             fi
             
