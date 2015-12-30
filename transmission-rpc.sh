@@ -26,6 +26,7 @@ FOREGROUND_BLUE=$(tput setaf 4)
 FOREGROUND_YELLOW=$(tput setaf 3)
 FOREGROUND_LIGHT_GRAY="$(tput bold)$(tput setaf 7)"
 FOREGROUND_LIGHT_RED="$(tput bold)$(tput setaf 1)"
+BACKGROUND_RED=$(tput setab 1)
 
 usage() {
 cat << EOF
@@ -239,7 +240,7 @@ then
         COLOR_END=
         if [ $COLORED_OUTPUT -eq 1 ]
         then
-            COLOR_START=$COLOR_BOLD_RED
+            COLOR_START=$BACKGROUND_RED
             COLOR_END=$TEXT_RESET
         fi
         
@@ -311,7 +312,7 @@ then
             COLOR_END=
             if [ $COLORED_OUTPUT -eq 1 ]
             then
-                COLOR_START=$COLOR_BOLD_RED
+                COLOR_START=$BACKGROUND_RED
                 COLOR_END=$TEXT_RESET
             fi
             
