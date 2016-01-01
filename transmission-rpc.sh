@@ -280,17 +280,17 @@ then
     METAINFO_OR_TORRENT_LINK_FIELD="\"metainfo\":\"$BASE64_ENCODED_TORRENT_FILE\""
 fi
 
-ADD_RESULT=$(curl --silent --anyauth$USER_PASSWORD_ARG --header "$SESSION_HEADER" "http://$HOST_ARG/transmission/rpc" -d "{\"method\":\"torrent-add\",\"arguments\":{\"paused\":false,$METAINFO_OR_TORRENT_LINK_FIELD}}")
-TORRENT_ID=$(echo $ADD_RESULT | sed 's/.*id\"://g;s/\,.*//g')
-TORRENT_NAME=$(echo $ADD_RESULT | sed 's/.*name\":\"//g;s/\"\}.*//g')
+ADD_OUTPUT=$(curl --silent --anyauth$USER_PASSWORD_ARG --header "$SESSION_HEADER" "http://$HOST_ARG/transmission/rpc" -d "{\"method\":\"torrent-add\",\"arguments\":{\"paused\":false,$METAINFO_OR_TORRENT_LINK_FIELD}}")
+TORRENT_ID=$(echo $ADD_OUTPUT | sed 's/.*id\"://g;s/\,.*//g')
+TORRENT_NAME=$(echo $ADD_OUTPUT | sed 's/.*name\":\"//g;s/\"\}.*//g')
 
-if [ -z "$ADD_RESULT" ]
+if [ -z "$ADD_OUTPUT" ]
 then
     echo "Could not connect to server. Verify that hostname and port is correct."
     exit 1
 fi
 
-if [ ! -z "$(echo "$ADD_RESULT" | grep "Unauthorized User")" ]
+if [ ! -z "$(echo "$ADD_OUTPUT" | grep "Unauthorized User")" ]
 then
     echo "Reached server but could not log on. Verify that the login credentials are correct."
     exit 1
