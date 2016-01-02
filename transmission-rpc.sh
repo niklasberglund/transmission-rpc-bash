@@ -290,6 +290,25 @@ then
     exit 1
 fi
 
+# check if Transmission says torrent is invalid/corrupt
+ADD_RESULT=$(echo $ADD_OUTPUT | sed 's/.*result\":\"//g;s/\".*//g')
+echo "$ADD_RESULT" | grep -q "invalid or corrupt torrent"
+TORRENT_VALID=$?
+
+if [ $TORRENT_VALID -eq 0 ]
+then
+    COLOR_START=
+    COLOR_END=
+    if [ $COLORED_OUTPUT -eq 1 ]
+    then
+        COLOR_START="${BACKGROUND_RED}${FOREGROUND_WHITE}"
+        COLOR_END=$TEXT_RESET
+    fi
+            
+    printf "\n${COLOR_START}Error:${COLOR_END} Invalid torrent.${COLOR_END}"
+    exit 1
+fi
+
 if [ ! -z "$(echo "$ADD_OUTPUT" | grep "Unauthorized User")" ]
 then
     echo "Reached server but could not log on. Verify that the login credentials are correct."
