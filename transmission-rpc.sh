@@ -1,5 +1,12 @@
 #!/bin/sh
 
+#
+# Developed by Niklas Berglund - niklas@klurig.hk
+# Released under MIT license on https://github.com/niklasberglund/transmission-rpc-bash
+# Tested with Transmission RPC 2.80
+# https://trac.transmissionbt.com/browser/trunk/extras/rpc-spec.txt
+#
+
 LC_CTYPE=C
 
 HOST_ARG="127.0.0.1:9092" # host passed to curl invocations
