@@ -209,10 +209,20 @@ do
     esac
 done
 
+# arg with torrent to add
+TORRENT_ARG=${@:$OPTIND:1}
+
 # make sure -P isn't used without -l
 if [ $TASK_LIST_PAUSED -eq 1 ] && [ $TASK_LIST -eq 0 ]
 then
     echo "The -P flag must be used together with the -l flag."
+    exit 1
+fi
+
+# make sure either used with -l or adding torrent
+if [ $TASK_LIST -eq 0 ] && [ -z "$TORRENT_ARG" ]
+then
+    echo "Must either pass torrent to add or list torrents(-l flag)"
     exit 1
 fi
 
@@ -257,7 +267,6 @@ fi
 LOCAL_TORRENT_FILE=
 TORRENT_LINK=
 
-TORRENT_ARG=${@:$OPTIND:1}
 PROTOCOL_COMPONENT=$(echo $TORRENT_ARG | cut -d ":" -f 1)
 
 if [ "$PROTOCOL_COMPONENT" == "magnet" ] || [ "$PROTOCOL_COMPONENT" == "http" ] || [ "$PROTOCOL_COMPONENT" == "https" ]
