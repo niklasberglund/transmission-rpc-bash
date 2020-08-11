@@ -41,7 +41,7 @@ cat << EOF
     Usage: $0 [options] <Torrent address or local file path>
 
     This script adds a torrent for download through Transmission's RPC protocol.
-    
+
     EXAMPLE:
         $0 -s my-server.com:9092 -u myUsername -p myPassword "http://www.frostclick.com/torrents/video/animation/Big_Buck_Bunny_1080p_surround_frostclick.com_frostwire.com.torrent"
 
@@ -59,57 +59,57 @@ EOF
 
 torrent_percent_done() {
     ARG_TORRENT_INFO=$1
-    
+
     PERCENT_DONE=$(echo "$ARG_TORRENT_INFO" | sed 's/.*percentDone\"://g;s/\,.*//g')
     PERCENT=$(perl -e "printf('%.0f', $PERCENT_DONE*100)")
-    
+
     echo $PERCENT
 }
 
 torrent_download_speed() {
     ARG_TORRENT_INFO=$1
-    
+
     DOWNLOAD_SPEED=$(echo "$ARG_TORRENT_INFO" | sed 's/.*rateDownload\"://g;s/\}.*//g')
     DOWNLOAD_SPEED_KB=$(perl -e "printf('%.1f', $DOWNLOAD_SPEED/1024)")
-    
+
     echo $DOWNLOAD_SPEED_KB
 }
 
 print_torrents_listing() {
     JSON=$1
-    
+
     STATUS_PAUSED=0
     STATUS_QUEUED=3
     STATUS_DOWNLOADING=4
     STATUS_SEEDING=6
-    
+
     ROW_BY_ROW=$(echo "$TORRENTS_INFO" | sed 's/}\,{/}\
 {/g' | sed 's/^{//g' | sed 's/}$//g' | sed 's/}]},\"result\":.*$//g')
-    
+
     # use grep to ignore paused torrents if they shouldn't be listed
     if [ $TASK_LIST_PAUSED -eq 0 ]
     then
         ROW_BY_ROW=$(echo "$ROW_BY_ROW" | grep -v "\"status\":0")
     fi
-    
+
     # header of table output
     TABLE_HEADER="${TEXT_INVERTED}\nStatus\tName\tProgress\tDl.\tUp.        ${TEXT_RESET}" # Dirty. I'm sorry
-    
+
     TABLE_DATA=$(echo "$ROW_BY_ROW" | while read LINE
     do
         STATUS=$(echo "$LINE" | grep -Eo "\".*status\":(.*?)\$" | sed 's/.*\"status\"://')
-        
+
         if [ $TASK_LIST_PAUSED -eq 1 ] || [ ! "$STATUS" -eq $STATUS_PAUSED ] # not displaying paused torrent downloads by default
         then
-            NAME=$(echo "$LINE" | grep -Eo "\"name\":\"(.*?)\"" | sed 's/\"name\":\"//' | sed 's/\"$//')
-            PERCENT_DONE=$(echo "$LINE" | grep -Eo "\"percentDone\":(.*?)," | sed 's/\"percentDone\"://' | sed 's/,$//')
+            NAME=$(echo "$LINE" | grep -Eo "\"name\":\"(.*?)\"" | sed 's/\"name\":\"//' | sed 's/\".*//')
+            PERCENT_DONE=$(echo "$LINE" | grep -Eo "\"percentDone\":(.*?)," | sed 's/\"percentDone\"://' | sed 's/,.*//')
             PERCENT_DONE=$(perl -e "print int($PERCENT_DONE*100)")
-            RATE_DOWNLOAD=$(echo "$LINE" | grep -Eo "\"rateDownload\":(.*?)," | sed 's/\"rateDownload\"://' | sed 's/,$//')
-            RATE_UPLOAD=$(echo "$LINE" | grep -Eo "\"rateUpload\":(.*?)," | sed 's/\"rateUpload\"://' | sed 's/,$//')
-            
+            RATE_DOWNLOAD=$(echo "$LINE" | grep -Eo "\"rateDownload\":(.*?)," | sed 's/\"rateDownload\"://' | sed 's/,.*//')
+            RATE_UPLOAD=$(echo "$LINE" | grep -Eo "\"rateUpload\":(.*?)," | sed 's/\"rateUpload\"://' | sed 's/,.*//')
+
             RATE_DOWNLOAD_KB=$(perl -e "printf('%.1f', $RATE_DOWNLOAD/1024)")
             RATE_UPLOAD_KB=$(perl -e "printf('%.1f', $RATE_UPLOAD/1024)")
-            
+
             # turn status code into string
             if [ "$STATUS" -eq $STATUS_QUEUED ]
             then
@@ -126,11 +126,11 @@ print_torrents_listing() {
             else
                 STATUS_STRING="N/A"
             fi
-            
+
             printf "${STATUS_STRING}\t%.40s\t${PERCENT_DONE}%s\t${RATE_DOWNLOAD_KB} KB/s\t${RATE_UPLOAD_KB} KB/s\n" "$NAME" "%%"
         fi
     done)
-    
+
     # solution for conditional colored output. output is piped through colorize_table which either colorizes or just forwards(cat -)
     if [ $COLORED_OUTPUT -eq 1 ]
     then
@@ -146,7 +146,7 @@ print_torrents_listing() {
             cat -
         }
     fi
-    
+
     # output table. the colorize_table function only colorizes if COLORED_OUTPUT is set to 1
     printf "${TABLE_HEADER}\n${TABLE_DATA}\n" | column -ts $'\t' | colorize_table
 }
@@ -154,15 +154,15 @@ print_torrents_listing() {
 progress_visualiser() {
     ARG_PERCENT=$1
     ARG_DOWNLOAD_SPEED=$2
-    
+
     OUTPUT_STRING=""
     STEPS=50
     STEPS_COMPLETED=$(perl -e "print int(($ARG_PERCENT/100) * $STEPS)")
-    
+
     OUTPUT_STRING="$OUTPUT_STRING $ARG_PERCENT%% "
-    
+
     OUTPUT_STRING="$OUTPUT_STRING| "
-    
+
     if [ $STEPS_COMPLETED -gt 0 ]
     then
         for i in $(seq 1 $STEPS_COMPLETED)
@@ -170,15 +170,15 @@ progress_visualiser() {
             OUTPUT_STRING="$OUTPUT_STRING#"
         done
     fi
-    
+
     for j in $(seq $STEPS_COMPLETED $STEPS)
     do
         OUTPUT_STRING="$OUTPUT_STRING-"
     done
-    
+
     OUTPUT_STRING="$OUTPUT_STRING |"
     OUTPUT_STRING="$OUTPUT_STRING $ARG_DOWNLOAD_SPEED KB/s"
-    
+
     printf "\r$OUTPUT_STRING  "
 }
 
@@ -261,11 +261,11 @@ then
             COLOR_START="${BACKGROUND_RED}${FOREGROUND_WHITE}"
             COLOR_END=$TEXT_RESET
         fi
-        
+
         printf "${COLOR_START}Error:${COLOR_END} Could not connect to Transmission RPC server. Make sure the specified credentials are correct. For additional info check help text by passing the -h flag."
         exit 1
     fi
-    
+
     print_torrents_listing "$TORRENTS_INFO"
     exit 0
 fi
@@ -320,7 +320,7 @@ then
         COLOR_START="${BACKGROUND_RED}${FOREGROUND_WHITE}"
         COLOR_END=$TEXT_RESET
     fi
-            
+
     printf "\n${COLOR_START}Error:${COLOR_END} Invalid torrent.${COLOR_END}"
     exit 1
 fi
@@ -336,11 +336,11 @@ echo "Downloading $TORRENT_NAME"
 if [ $QUIET_MODE -eq 0 ]
 then
     PERCENT_DONE=0 # so the while loop below will start
-    
+
     while [ $PERCENT_DONE -lt 100 ]
     do
         TORRENT_INFO=$(curl --silent --anyauth$USER_PASSWORD_ARG --header "$SESSION_HEADER" "http://$HOST_ARG/transmission/rpc" -d "{\"method\":\"torrent-get\",\"arguments\": {\"ids\":$TORRENT_ID,\"fields\":[\"rateDownload\",\"id\",\"percentDone\"]}}")
-        
+
         # have we lost the connection?
         if [ "$?" -gt 0 ]
         then
@@ -351,14 +351,14 @@ then
                 COLOR_START="${BACKGROUND_RED}${FOREGROUND_WHITE}"
                 COLOR_END=$TEXT_RESET
             fi
-            
+
             printf "\n${COLOR_START}Error:${COLOR_END} Lost the connection to Transmission RPC server. Progress cannot be displayed but your torrent is still active.${COLOR_END}"
             exit 1
         fi
-        
+
         PERCENT_DONE=$(torrent_percent_done "$TORRENT_INFO")
         DOWNLOAD_SPEED=$(torrent_download_speed "$TORRENT_INFO")
-        
+
         progress_visualiser $PERCENT_DONE $DOWNLOAD_SPEED
         sleep 1
     done
